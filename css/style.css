@@ -1,0 +1,19 @@
+.wrap-page {
+    background: #fff;
+    max-width: 1170px;
+    width: 100%;
+    margin: 35px auto;
+}
+h2 {
+    text-align: center;
+}
+table {
+    cellpadding : 0;
+    cellspacing: 0;
+    border: 2px solid black;
+}
+#gameField {
+    height: 130px;
+    width: 130px;
+    margin: 0 auto;
+}
