@@ -13,7 +13,6 @@ table {
 #gameField table tr td {
     width: 20px;
     height: 20px;
-    background-color : gray;
     border:1px dotted green;
     cursor:pointer;
 }
@@ -26,6 +25,15 @@ table {
     width: 130px;
     margin: 0 auto;
 }
-.b {
+.closed {
+    background-color : gray;
+}
+.bomb {
     background-image: url('../img/bomb.png');
+}
+.red {
+    background-color: red;
+}
+.flag {
+    background-image: url('../img/flag1.png');
 }
