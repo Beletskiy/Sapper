@@ -1,7 +1,7 @@
 
 /*--------------------------------------------------visualization-------------------------------------------*/
 function HTMLDrawer (leftClickHandler, rightClickHandler) {
-    this.htmlField = null;
+    // this.htmlField = null;
     this.leftClickHandler = leftClickHandler;
     this.rightClickHandler = rightClickHandler;
 }
@@ -53,7 +53,6 @@ HTMLDrawer.prototype.drawHtmlField = function (modelArr) {
 
 HTMLDrawer.prototype.showBomb = function (x,y,modelArr) {
     var htmlField = modelArr,
-        self = this,
         cellId = 'c_'+x+'_'+y;
 
     document.getElementById(cellId).classList.remove('closed');
@@ -62,7 +61,8 @@ HTMLDrawer.prototype.showBomb = function (x,y,modelArr) {
     for (var i = 0; i < htmlField.length; i++) {
         for (var j = 0; j < htmlField.length; j++) {
             cellId = 'c_'+j+'_'+i;
-            if (Game.prototype.isBomb(j,i)) {
+         //   if (Game.prototype.isBomb(j,i,modelArr)) {
+            if (Game.prototype.isBomb.call(game,j,i)) {                     //  так можно???
                 document.getElementById(cellId).classList.add('bomb');
             }
         }
@@ -76,9 +76,8 @@ HTMLDrawer.prototype.showNumber = function (x,y,modelArr) {
     document.getElementById(cellId).innerHTML = htmlField[x][y][0];
 
 };
-HTMLDrawer.prototype.showBlank = function (x, y, modelArr) {
-    var htmlField = modelArr,
-        cellId = 'c_'+x+'_'+y;
+HTMLDrawer.prototype.showBlank = function (x, y) {
+    var cellId = 'c_'+x+'_'+y;
     document.getElementById(cellId).classList.remove('closed');
 };
 HTMLDrawer.prototype.showFlag = function (x, y) {
@@ -97,24 +96,20 @@ HTMLDrawer.prototype.disableFlag = function (x, y) {
 
 /*---------------------------------------------------logic--------------------------------------------------*/
 function Game () {
-    //this.drawer = new HTMLDrawer();
 
-    //var self = this;
+    //var self = this;                           2-d variant
     //this.drawer = new HTMLDrawer(function () {
     //    self.onCellClick()
     //});
 
     this.drawer = new HTMLDrawer(this.onCellClick.bind(this), this.onCellRightClick.bind(this));
 
-    console.log(this.drawer);
     //this.drawer = new CanvasDrawer();
-    // this.drawer.drawField (this.field);
     this.modelArr = null;
     this.size = 0;
-
 }
 
-Game.prototype.start = function(s) {  //create model of the square field , w - side of the square
+Game.prototype.start = function(s) {  //create model of the square field , s - side of the square
     this.modelArr = [];
     this.size = s;
     var self = this;
@@ -197,12 +192,13 @@ Game.prototype.getRand = function (min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 };
 Game.prototype.isBomb = function (x, y) {
+    //console.log(x,' ',y,' ',this.modelArr);
    if  (this.modelArr[x][y][0] == 10) {
        return true;
    }
 };
 Game.prototype.isNumber = function (x, y) {
-    if ((this.modelArr[x][y][0] >0 ) && (this.modelArr[x][y][0] < 9)) {
+    if ((this.modelArr[x][y][0] > 0 ) && (this.modelArr[x][y][0] < 9)) {
         return true;
     }
 };
@@ -214,16 +210,15 @@ Game.prototype.isFlag = function (x,y) {
 Game.prototype.onCellClick = function (x, y, modelArr) {
     var self = this;
     this.modelArr = modelArr;
-    console.log(this.drawer);
-   // this.drawer = new HTMLDrawer();
+    //console.log(this.drawer);
     if ((self.isBomb(x, y)) && (!self.isFlag(x, y))) {
       //  HTMLDrawer.prototype.showBomb(x,y,this.modelArr);   ----???----
         this.drawer.showBomb(x,y,this.modelArr);
     } else if ((self.isNumber(x, y)) && (!self.isFlag(x, y))) {
-        HTMLDrawer.prototype.showNumber(x,y,this.modelArr);
+        this.drawer.showNumber(x,y,this.modelArr);
         this.modelArr[x][y][1] = 'open';
     } else if (!self.isFlag(x, y)) {
-        HTMLDrawer.prototype.showBlank(x,y,this.modelArr);
+        this.drawer.showBlank(x,y,this.modelArr);
         this.modelArr[x][y][1] = 'open';
     }
     if (self.isWin(this.modelArr)) {
@@ -236,10 +231,10 @@ Game.prototype.onCellRightClick = function (x, y, modelArr) {
         state = this.modelArr[x][y][1];
     if (state == 'closed') {
         this.modelArr[x][y][1] = 'flag';
-        HTMLDrawer.prototype.showFlag(x,y);
+        this.drawer.showFlag(x,y);
     } else if (state == 'flag') {
         this.modelArr[x][y][1] = 'closed';
-        HTMLDrawer.prototype.disableFlag(x,y);
+        this.drawer.disableFlag(x,y);
     }
 
 };
@@ -262,7 +257,6 @@ Game.prototype.isWin = function (modelArr) {
 
 /*--------------------------------------end of logic------------------------------------------*/
 var game = new Game();
-//var htmlDrawer = new HTMLDrawer();
 game.start(3);
 game.drawer.drawHtmlField(game.modelArr);
 
