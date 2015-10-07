@@ -1,13 +1,81 @@
 
 /*--------------------------------------------------visualization-------------------------------------------*/
+/*--------------------------------------------------CanvasDrawer-------------------------------------------*/
+
+function CanvasDrawer () {
+    this.startPositionX = 0;
+    this.startPositionY = 0;
+    this.cellSize = 20;
+}
+CanvasDrawer.prototype.drawCanvasField = function (modelArr) {
+    var canvasArr = modelArr,
+        cellSize = this.cellSize,
+        canvasField = document.getElementById("canvasGameField"),
+        ctx = canvasField.getContext('2d');
+    ctx.fillStyle = "white";
+
+    for (var i = 0; i < canvasArr.length; i++) {
+        for (var j = 0; j < canvasArr.length; j++) {
+            ctx.fillRect(this.startPositionX + j*cellSize, this.startPositionY + i*cellSize, cellSize, cellSize);
+        }
+    }
+    ctx.fillStyle = 'gray';
+    for (var i = 0; i < canvasArr.length; i++) {
+        for (var j = 0; j < canvasArr.length; j++) {
+             ctx.fillRect(this.startPositionX+1 + j*cellSize, this.startPositionY+1+i*cellSize, cellSize-1, cellSize-1);
+        }
+    }
+
+    document.getElementById('canvasGameField').onclick = function(e) {
+        var mouseX = Math.floor(e.layerX/cellSize),
+            mouseY = Math.floor(e.layerY/cellSize);
+        console.log(mouseX,', ',mouseY);
+        game.onCellClick(mouseX, mouseY, canvasArr);
+    }
+
+    document.getElementById('canvasGameField').oncontextmenu = function(e) {
+        var mouseX = Math.floor(e.layerX/cellSize),
+            mouseY = Math.floor(e.layerY/cellSize);
+        e.preventDefault();
+        console.log(mouseX,' right ',mouseY);
+        game.onCellRightClick(mouseX, mouseY, canvasArr);
+    }
+};
+CanvasDrawer.prototype.showNumber = function (x,y) {
+
+
+};
+CanvasDrawer.prototype.showBlank = function (x,y) {
+    var canvasField = document.getElementById("canvasGameField"),
+        ctx = canvasField.getContext('2d');
+    ctx.fillStyle = "#ddd";
+    ctx.fillRect(this.startPositionX + x*this.cellSize, this.startPositionY+y*this.cellSize,
+        this.cellSize, this.cellSize);
+};
+CanvasDrawer.prototype.showBomb = function (x,y) {
+
+
+};
+CanvasDrawer.prototype.showAllBombs = function (x,y) {
+
+};
+CanvasDrawer.prototype.showFlag = function (x, y) {
+    var canvasField = document.getElementById("canvasGameField"),
+        ctx = canvasField.getContext('2d'),
+        pic = new Image();
+    pic.src = 'img/flag1.png';
+    ctx.drawImage(pic, x, y);
+};
+CanvasDrawer.prototype.disableFlag = function (x, y) {
+
+};
+
+
+/* ---------------------------------------------------HTMLDrawer-----------------------------------------------*/
 function HTMLDrawer (leftClickHandler, rightClickHandler) {
     // this.htmlField = null;
     this.leftClickHandler = leftClickHandler;
     this.rightClickHandler = rightClickHandler;
-}
-
-function CanvasDrawer () {
-
 }
 
 HTMLDrawer.prototype.drawHtmlField = function (modelArr) {
@@ -51,29 +119,25 @@ HTMLDrawer.prototype.drawHtmlField = function (modelArr) {
     gameField.appendChild(table);
 };
 
-HTMLDrawer.prototype.showBomb = function (x,y,modelArr) {
-    var htmlField = modelArr,
-        cellId = 'c_'+x+'_'+y;
+HTMLDrawer.prototype.showBomb = function (x,y) {
+    var cellId = document.getElementById('c_'+x+'_'+ y);
 
-    document.getElementById(cellId).classList.remove('closed');
-    document.getElementById(cellId).classList.add('red');
-    document.getElementById(cellId).classList.add('bomb');
-    for (var i = 0; i < htmlField.length; i++) {
-        for (var j = 0; j < htmlField.length; j++) {
-            cellId = 'c_'+j+'_'+i;
-         //   if (Game.prototype.isBomb(j,i,modelArr)) {
-            if (Game.prototype.isBomb.call(game,j,i)) {                     //  так можно???
-                document.getElementById(cellId).classList.add('bomb');
-            }
-        }
-    }
-    alert ('You lose!');
+    cellId.classList.remove('closed');
+    cellId.classList.add('red');
+    cellId.classList.add('bomb');
+};
+HTMLDrawer.prototype.showAllBombs = function (x,y) {
+    var cellId = document.getElementById('c_'+x+'_'+y);
+
+    cellId.classList.remove('closed');
+    cellId.classList.add('bomb');
 };
 HTMLDrawer.prototype.showNumber = function (x,y,modelArr) {
     var htmlField = modelArr,
-        cellId = 'c_'+x+'_'+y;
-    document.getElementById(cellId).classList.remove('closed');
-    document.getElementById(cellId).innerHTML = htmlField[x][y][0];
+        cellId = document.getElementById('c_'+x+'_'+y);
+
+    cellId.classList.remove('closed');
+    cellId.innerHTML = htmlField[x][y][0];
 
 };
 HTMLDrawer.prototype.showBlank = function (x, y) {
@@ -81,15 +145,14 @@ HTMLDrawer.prototype.showBlank = function (x, y) {
     document.getElementById(cellId).classList.remove('closed');
 };
 HTMLDrawer.prototype.showFlag = function (x, y) {
-    var cellId = 'c_'+x+'_'+y;
-    document.getElementById(cellId).classList.remove('closed');
-    document.getElementById(cellId).classList.add('flag');
-
+    var cellId = document.getElementById('c_'+x+'_'+y);
+    cellId.classList.remove('closed');
+    cellId.classList.add('flag');
 };
 HTMLDrawer.prototype.disableFlag = function (x, y) {
-    var cellId = 'c_'+x+'_'+y;
-    document.getElementById(cellId).classList.remove('flag');
-    document.getElementById(cellId).classList.add('closed');
+    var cellId = document.getElementById('c_'+x+'_'+y);
+    cellId.classList.remove('flag');
+    cellId.classList.add('closed');
 };
 
 /*----------------------------------------------end of visualization----------------------------------------*/
@@ -102,9 +165,10 @@ function Game () {
     //    self.onCellClick()
     //});
 
-    this.drawer = new HTMLDrawer(this.onCellClick.bind(this), this.onCellRightClick.bind(this));
+  //  this.drawer = new HTMLDrawer(this.onCellClick.bind(this), this.onCellRightClick.bind(this));
 
-    //this.drawer = new CanvasDrawer();
+ //   this.drawer = new CanvasDrawer(this.onCellClick.bind(this), this.onCellRightClick.bind(this));
+    this.drawer = new CanvasDrawer();
     this.modelArr = null;
     this.size = 0;
 }
@@ -180,12 +244,10 @@ Game.prototype.arrangeNumbers = function (y,x) {
         (x + obj.x) < this.modelArr.length &&
         (y + obj.y > -1) &&
         (x + obj.x > -1) &&
-        (!self.isBomb(y + obj.y, x + obj.x)) )
-    {
-        this.modelArr[y + obj.y][x + obj.x][0]++;
+        (!self.isBomb(y + obj.y, x + obj.x)) ) {
+            this.modelArr[y + obj.y][x + obj.x][0]++;
+        }
     }
-}
-   // console.log(this.modelArr);
 };
 
 Game.prototype.getRand = function (min, max) {
@@ -202,21 +264,34 @@ Game.prototype.isNumber = function (x, y) {
         return true;
     }
 };
-Game.prototype.isFlag = function (x,y) {
+Game.prototype.isFlag = function (x, y) {
     if (this.modelArr[x][y][1] == 'flag') {
         return true;
     }
 };
+Game.prototype.findAllBombs = function () {
+    var size = this.modelArr.length;
+    for (var i = 0; i < size; i++) {
+        for (var j = 0; j < size; j++) {
+            if (this.modelArr[j][i][0] == 10){
+                this.drawer.showAllBombs(j, i);
+            }
+        }
+    }
+};
 Game.prototype.onCellClick = function (x, y, modelArr) {
+   // this.drawer = new CanvasDrawer();
     var self = this;
     this.modelArr = modelArr;
-    //console.log(this.drawer);
     if ((self.isBomb(x, y)) && (!self.isFlag(x, y))) {
-      //  HTMLDrawer.prototype.showBomb(x,y,this.modelArr);   ----???----
-        this.drawer.showBomb(x,y,this.modelArr);
+        this.drawer.showBomb(x, y);
+        self.findAllBombs();
+        alert ('You luse!');
+
     } else if ((self.isNumber(x, y)) && (!self.isFlag(x, y))) {
         this.drawer.showNumber(x,y,this.modelArr);
         this.modelArr[x][y][1] = 'open';
+
     } else if (!self.isFlag(x, y)) {
         this.drawer.showBlank(x,y,this.modelArr);
         this.modelArr[x][y][1] = 'open';
@@ -258,5 +333,6 @@ Game.prototype.isWin = function (modelArr) {
 /*--------------------------------------end of logic------------------------------------------*/
 var game = new Game();
 game.start(3);
-game.drawer.drawHtmlField(game.modelArr);
+//game.drawer.drawHtmlField(game.modelArr);
+game.drawer.drawCanvasField(game.modelArr);
 

@@ -20,7 +20,7 @@ table {
 #gameField table tr td:hover {
     border:1px solid greenyellow;
 }
-#gameField {
+#gameField, #canvasGameField {
     height: 130px;
     width: 130px;
     margin: 0 auto;
