@@ -13,46 +13,42 @@ CanvasDrawer.prototype.drawCanvasField = function (modelArr) {
         numberOfCells = canvasArr.length,
         cellSize = this.cellSize,
         ctx = this.ctx;
-        ctx.fillStyle = "white";
 
+    ctx.fillStyle = 'gray';
     for (var i = 0; i < numberOfCells; i++) {
         for (var j = 0; j < numberOfCells; j++) {
-            ctx.fillRect(j*cellSize, i*cellSize, cellSize, cellSize);
-        }
-    }
-    ctx.fillStyle = 'gray';
-    for (i = 0; i < numberOfCells; i++) {
-        for (j = 0; j < numberOfCells; j++) {
              ctx.fillRect(j*cellSize + 1, i*cellSize + 1, cellSize - 1, cellSize - 1);
         }
     }
 
-    document.getElementById('canvasGameField').onclick = function(e) {
-        var mousePositionX = Math.floor(e.layerX/cellSize),
-            mousePositionY = Math.floor(e.layerY/cellSize);
+    this.canvasField.onclick = function(e) {
+        var mousePositionX = Math.floor(e.offsetX/cellSize),
+            mousePositionY = Math.floor(e.offsetY/cellSize);
         game.onCellClick(mousePositionX, mousePositionY, canvasArr);  // -------------так можно ???---------------
     };
 
-    document.getElementById('canvasGameField').oncontextmenu = function(e) {
-        var mousePositionX = Math.floor(e.layerX/cellSize),
-            mousePositionY = Math.floor(e.layerY/cellSize);
+    this.canvasField.oncontextmenu = function(e) {
+        var mousePositionX = Math.floor(e.offsetX/cellSize),
+            mousePositionY = Math.floor(e.offsetY/cellSize);
         e.preventDefault();
         game.onCellRightClick(mousePositionX, mousePositionY, canvasArr);
     };
 };
-CanvasDrawer.prototype.showNumber = function (x,y,modelArr,number) {
+CanvasDrawer.prototype.showNumber = function (x,y,modelArr,numberOfMineBeside) {
     this.ctx.font = "18px Arial";
     this.ctx.fillStyle = "black";
-    this.ctx.fillText(number, x*this.cellSize + this.cellSize/3,  y*this.cellSize+this.cellSize-2);
+    this.ctx.fillText(numberOfMineBeside, x*this.cellSize + this.cellSize/3,  y*this.cellSize+this.cellSize-2);
 };
 CanvasDrawer.prototype.showBlank = function (x,y) {
     this.ctx.fillStyle = "#ddd";
     this.ctx.fillRect(x*this.cellSize+1, y*this.cellSize+1, this.cellSize-1, this.cellSize-1);
 };
 CanvasDrawer.prototype.showBomb = function (x,y) {
+
     this.pic.src = 'img/bomb.png';
     this.ctx.fillStyle = 'red';
     this.ctx.fillRect(x*this.cellSize+1, y*this.cellSize+1, this.cellSize-1, this.cellSize-1);
+    //this.showAllBombs(x,y);
     this.ctx.drawImage(this.pic, x*this.cellSize, y*this.cellSize);
 };
 CanvasDrawer.prototype.showAllBombs = function (x,y) {
@@ -328,7 +324,7 @@ Game.prototype.isWin = function (modelArr) {
 
 /*--------------------------------------end of logic------------------------------------------*/
 var game = new Game();
-game.start(3);
+game.start(5);
 //game.drawer.drawHtmlField(game.modelArr);
 game.drawer.drawCanvasField(game.modelArr);
 
