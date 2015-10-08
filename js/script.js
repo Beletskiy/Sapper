@@ -3,73 +3,70 @@
 /*--------------------------------------------------CanvasDrawer-------------------------------------------*/
 
 function CanvasDrawer () {
-    this.startPositionX = 0;
-    this.startPositionY = 0;
     this.cellSize = 20;
+    this.canvasField = document.getElementById("canvasGameField");
+    this.ctx = this.canvasField.getContext('2d');
+    this.pic = new Image();
 }
 CanvasDrawer.prototype.drawCanvasField = function (modelArr) {
     var canvasArr = modelArr,
+        numberOfCells = canvasArr.length,
         cellSize = this.cellSize,
-        canvasField = document.getElementById("canvasGameField"),
-        ctx = canvasField.getContext('2d');
-    ctx.fillStyle = "white";
+        ctx = this.ctx;
+        ctx.fillStyle = "white";
 
-    for (var i = 0; i < canvasArr.length; i++) {
-        for (var j = 0; j < canvasArr.length; j++) {
-            ctx.fillRect(this.startPositionX + j*cellSize, this.startPositionY + i*cellSize, cellSize, cellSize);
+    for (var i = 0; i < numberOfCells; i++) {
+        for (var j = 0; j < numberOfCells; j++) {
+            ctx.fillRect(j*cellSize, i*cellSize, cellSize, cellSize);
         }
     }
     ctx.fillStyle = 'gray';
-    for (var i = 0; i < canvasArr.length; i++) {
-        for (var j = 0; j < canvasArr.length; j++) {
-             ctx.fillRect(this.startPositionX+1 + j*cellSize, this.startPositionY+1+i*cellSize, cellSize-1, cellSize-1);
+    for (i = 0; i < numberOfCells; i++) {
+        for (j = 0; j < numberOfCells; j++) {
+             ctx.fillRect(j*cellSize + 1, i*cellSize + 1, cellSize - 1, cellSize - 1);
         }
     }
 
     document.getElementById('canvasGameField').onclick = function(e) {
-        var mouseX = Math.floor(e.layerX/cellSize),
-            mouseY = Math.floor(e.layerY/cellSize);
-        console.log(mouseX,', ',mouseY);
-        game.onCellClick(mouseX, mouseY, canvasArr);
-    }
+        var mousePositionX = Math.floor(e.layerX/cellSize),
+            mousePositionY = Math.floor(e.layerY/cellSize);
+        game.onCellClick(mousePositionX, mousePositionY, canvasArr);  // -------------так можно ???---------------
+    };
 
     document.getElementById('canvasGameField').oncontextmenu = function(e) {
-        var mouseX = Math.floor(e.layerX/cellSize),
-            mouseY = Math.floor(e.layerY/cellSize);
+        var mousePositionX = Math.floor(e.layerX/cellSize),
+            mousePositionY = Math.floor(e.layerY/cellSize);
         e.preventDefault();
-        console.log(mouseX,' right ',mouseY);
-        game.onCellRightClick(mouseX, mouseY, canvasArr);
-    }
+        game.onCellRightClick(mousePositionX, mousePositionY, canvasArr);
+    };
 };
-CanvasDrawer.prototype.showNumber = function (x,y) {
-
-
+CanvasDrawer.prototype.showNumber = function (x,y,modelArr,number) {
+    this.ctx.font = "18px Arial";
+    this.ctx.fillStyle = "black";
+    this.ctx.fillText(number, x*this.cellSize + this.cellSize/3,  y*this.cellSize+this.cellSize-2);
 };
 CanvasDrawer.prototype.showBlank = function (x,y) {
-    var canvasField = document.getElementById("canvasGameField"),
-        ctx = canvasField.getContext('2d');
-    ctx.fillStyle = "#ddd";
-    ctx.fillRect(this.startPositionX + x*this.cellSize, this.startPositionY+y*this.cellSize,
-        this.cellSize, this.cellSize);
+    this.ctx.fillStyle = "#ddd";
+    this.ctx.fillRect(x*this.cellSize+1, y*this.cellSize+1, this.cellSize-1, this.cellSize-1);
 };
 CanvasDrawer.prototype.showBomb = function (x,y) {
-
-
+    this.pic.src = 'img/bomb.png';
+    this.ctx.fillStyle = 'red';
+    this.ctx.fillRect(x*this.cellSize+1, y*this.cellSize+1, this.cellSize-1, this.cellSize-1);
+    this.ctx.drawImage(this.pic, x*this.cellSize, y*this.cellSize);
 };
 CanvasDrawer.prototype.showAllBombs = function (x,y) {
-
+    this.pic.src = 'img/bomb.png';
+    this.ctx.drawImage(this.pic, x*this.cellSize, y*this.cellSize);
 };
 CanvasDrawer.prototype.showFlag = function (x, y) {
-    var canvasField = document.getElementById("canvasGameField"),
-        ctx = canvasField.getContext('2d'),
-        pic = new Image();
-    pic.src = 'img/flag1.png';
-    ctx.drawImage(pic, x, y);
+    this.pic.src = 'img/flag1.png';
+    this.ctx.drawImage(this.pic, x*this.cellSize, y*this.cellSize);
 };
 CanvasDrawer.prototype.disableFlag = function (x, y) {
-
+    this.ctx.fillStyle = 'gray';
+    this.ctx.fillRect(x*this.cellSize+1, y*this.cellSize+1, this.cellSize-1, this.cellSize-1);
 };
-
 
 /* ---------------------------------------------------HTMLDrawer-----------------------------------------------*/
 function HTMLDrawer (leftClickHandler, rightClickHandler) {
@@ -165,9 +162,8 @@ function Game () {
     //    self.onCellClick()
     //});
 
-  //  this.drawer = new HTMLDrawer(this.onCellClick.bind(this), this.onCellRightClick.bind(this));
+    //this.drawer = new HTMLDrawer(this.onCellClick.bind(this), this.onCellRightClick.bind(this));
 
- //   this.drawer = new CanvasDrawer(this.onCellClick.bind(this), this.onCellRightClick.bind(this));
     this.drawer = new CanvasDrawer();
     this.modelArr = null;
     this.size = 0;
@@ -254,7 +250,6 @@ Game.prototype.getRand = function (min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 };
 Game.prototype.isBomb = function (x, y) {
-    //console.log(x,' ',y,' ',this.modelArr);
    if  (this.modelArr[x][y][0] == 10) {
        return true;
    }
@@ -280,8 +275,8 @@ Game.prototype.findAllBombs = function () {
     }
 };
 Game.prototype.onCellClick = function (x, y, modelArr) {
-   // this.drawer = new CanvasDrawer();
-    var self = this;
+    var self = this,
+        numberOfMineBeside = null;
     this.modelArr = modelArr;
     if ((self.isBomb(x, y)) && (!self.isFlag(x, y))) {
         this.drawer.showBomb(x, y);
@@ -289,7 +284,8 @@ Game.prototype.onCellClick = function (x, y, modelArr) {
         alert ('You luse!');
 
     } else if ((self.isNumber(x, y)) && (!self.isFlag(x, y))) {
-        this.drawer.showNumber(x,y,this.modelArr);
+        numberOfMineBeside = this.modelArr[x][y][0];
+        this.drawer.showNumber(x,y,this.modelArr,numberOfMineBeside);
         this.modelArr[x][y][1] = 'open';
 
     } else if (!self.isFlag(x, y)) {
